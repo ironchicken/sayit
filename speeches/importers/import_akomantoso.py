@@ -88,8 +88,8 @@ class ImportAkomaNtoso (ImporterBase):
             return name.title()
 
     def visit(self, node, section):
-       cached_title = ''
-       for child in node.iterchildren():
+        cached_title = ''
+        for child in node.iterchildren():
             tagname = self.get_tag(child)
             if tagname == 'heading':
                 # this will already have been extracted
@@ -97,7 +97,11 @@ class ImportAkomaNtoso (ImporterBase):
             if tagname == 'debateSection':
                 title = title_case_heading(child.heading.text)
 
-                if len(child) or not self.merge_empty_sections:
+                # Note that len(child) returns the number of siblings, not the
+                # number of children (because we're using objectify).
+                element_count = child.countchildren()
+
+                if element_count > 1 or not self.merge_empty_sections:
                     if cached_title:
                         title = cached_title + title
                         cached_title = ''
