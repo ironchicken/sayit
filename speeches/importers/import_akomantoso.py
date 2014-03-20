@@ -27,12 +27,14 @@ class ImportAkomaNtoso (ImporterBase):
     def import_document(self, document_path):
         tree = objectify.parse(document_path)
         self.xml = tree.getroot()
+        self.tree = etree.parse(document_path).getroot()
+        self.ns = self.tree.nsmap.get(None, '')
         return self.parse_document()
 
     def parse_document(self):
         debate = self.xml.debate
 
-        people = debate.find('meta/references/TLCPerson')
+        people = self.tree.findall('{%(ns)s}debate/{%(ns)s}meta/{%(ns)s}references/{%(ns)s}TLCPerson' % {'ns': self.ns})
         if people is None: people = []
         for person in people:
             id = person.get('id')
@@ -53,7 +55,7 @@ class ImportAkomaNtoso (ImporterBase):
 
             self.speakers[id] = speaker
 
-        docDate = debate.find('preface//docDate')
+        docDate = debate.find('{%(ns)s}preface//{%(ns)s}docDate' % {'ns': self.ns})
         if docDate is not None:
             self.start_date = dateutil.parse(docDate.get('date'))
 
